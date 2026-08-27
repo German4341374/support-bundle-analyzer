@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="title desc">
+  <title id="title">Universal Support Bundle Analyzer</title>
+  <desc id="desc">Privacy-first diagnostics for archives, logs, HAR files, Windows events and application support bundles.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#061324"/>
+      <stop offset="0.55" stop-color="#102a43"/>
+      <stop offset="1" stop-color="#0f766e"/>
+    </linearGradient>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M48 0H0V48" fill="none" stroke="#ffffff" stroke-opacity=".055"/>
+    </pattern>
+  </defs>
+  <rect width="1280" height="640" rx="30" fill="url(#bg)"/>
+  <rect width="1280" height="640" rx="30" fill="url(#grid)"/>
+  <g transform="translate(86 92)">
+    <rect width="194" height="42" rx="21" fill="#0d9488"/>
+    <text x="97" y="27" text-anchor="middle" fill="#ecfeff" font-family="Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="2">LOCAL-FIRST</text>
+    <text y="125" fill="#f8fafc" font-family="Arial, sans-serif" font-size="62" font-weight="800">SUPPORT BUNDLE</text>
+    <text y="196" fill="#f8fafc" font-family="Arial, sans-serif" font-size="62" font-weight="800">ANALYZER</text>
+    <text y="260" fill="#bae6fd" font-family="Arial, sans-serif" font-size="28">Archive → Evidence → Timeline → Redact → Report</text>
+    <text y="320" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="23">Offline diagnostics for logs, HAR, Windows, JVM, PHP and infrastructure bundles.</text>
+  </g>
+  <g transform="translate(870 130)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M42 38h188l58 58v292H42z" stroke="#67e8f9" stroke-width="8"/>
+    <path d="M230 38v70h58" stroke="#67e8f9" stroke-width="8"/>
+    <path d="M88 174h150M88 226h150M88 278h108" stroke="#a5f3fc" stroke-width="10"/>
+    <circle cx="270" cy="342" r="62" fill="#07111f" stroke="#5eead4" stroke-width="10"/>
+    <path d="m312 386 58 58M240 342l20 20 38-45" stroke="#5eead4" stroke-width="12"/>
+  </g>
+</svg>

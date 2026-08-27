@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://german4341374.github.io/support-bundle-analyzer/sitemap.xml

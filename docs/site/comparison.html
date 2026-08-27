@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="Measured comparison of synthetic healthy and database-outage support bundles."
+    />
+    <link
+      rel="canonical"
+      href="https://german4341374.github.io/support-bundle-analyzer/comparison.html"
+    />
+    <title>Healthy vs Database Outage | Support Bundle Analyzer</title>
+    <style>
+      :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #07111f; color: #e7eef9; }
+      main { width: min(980px, calc(100% - 32px)); margin: 0 auto; padding: 56px 0; }
+      a { color: #67e8f9; }
+      h1 { margin-bottom: 8px; font-size: clamp(2rem, 6vw, 4rem); }
+      .lead { color: #aebfd6; line-height: 1.65; }
+      .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin: 32px 0; }
+      .metric, .finding { border: 1px solid #29415f; border-radius: 12px; background: #0b1829; padding: 18px; }
+      .metric strong { display: block; font-size: 1.8rem; }
+      .metric span { color: #aebfd6; }
+      .finding { margin: 12px 0; }
+      .finding h2 { margin: 8px 0; font-size: 1.1rem; }
+      .badge { display: inline-block; padding: 4px 8px; border-radius: 999px; color: #07111f; background: #fbbf24; font-size: .75rem; font-weight: 800; text-transform: uppercase; }
+      .badge.high { background: #fb7185; }
+      .muted { color: #8da2bd; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <a href="./">Back to documentation</a>
+      <h1>Healthy vs Database Outage</h1>
+      <p class="lead">
+        This page is generated from two deterministic synthetic bundles by the real CLI. Differences are investigation leads, not automatic root-cause conclusions.
+      </p>
+      <div id="metrics" class="metrics" aria-label="Comparison summary"></div>
+      <h2>New findings in the outage bundle</h2>
+      <div id="findings"></div>
+      <p id="error" class="muted" role="status"></p>
+    </main>
+    <script type="module">
+      const element = (name, text, className) => {
+        const node = document.createElement(name);
+        if (text !== undefined) node.textContent = String(text);
+        if (className) node.className = className;
+        return node;
+      };
+      try {
+        const response = await fetch("comparison.json", { cache: "no-store" });
+        if (!response.ok) throw new Error(`comparison unavailable (${response.status})`);
+        const comparison = await response.json();
+        const metrics = [
+          ["Healthy findings", comparison.baselineFindings],
+          ["Outage findings", comparison.incidentFindings],
+          ["Healthy events", comparison.baselineTimelineEvents],
+          ["Outage events", comparison.incidentTimelineEvents],
+          ["Changed artifacts", comparison.changedArtifacts.length],
+        ];
+        for (const [label, value] of metrics) {
+          const card = element("div", undefined, "metric");
+          card.append(element("strong", value), element("span", label));
+          document.querySelector("#metrics").append(card);
+        }
+        for (const finding of comparison.newFindings) {
+          const card = element("article", undefined, "finding");
+          card.append(
+            element("span", finding.severity, `badge ${finding.severity}`),
+            element("h2", finding.title),
+            element("p", finding.summary),
+            element("p", `${finding.ruleId} · ${finding.confidence} confidence`, "muted"),
+          );
+          document.querySelector("#findings").append(card);
+        }
+      } catch (error) {
+        document.querySelector("#error").textContent =
+          error instanceof Error ? error.message : "Comparison unavailable";
+      }
+    </script>
+  </body>
+</html>

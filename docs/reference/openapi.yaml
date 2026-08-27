@@ -1,0 +1,181 @@
+openapi: 3.1.0
+info:
+  title: Support Bundle Analyzer API
+  version: 0.1.0
+  description: Local control-plane API. Non-loopback operation requires bearer authentication.
+servers:
+  - url: http://127.0.0.1:8080
+paths:
+  /health:
+    get:
+      operationId: health
+      security: []
+      responses:
+        "200": {description: Process is alive}
+  /ready:
+    get:
+      operationId: ready
+      responses:
+        "200": {description: Process accepts requests}
+  /metrics:
+    get:
+      operationId: metrics
+      responses:
+        "200": {description: Prometheus text metrics}
+  /api/v1/analyses:
+    get:
+      operationId: listAnalyses
+      responses:
+        "200": {description: Local analysis sessions}
+    post:
+      operationId: createAnalysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [inputPath]
+              properties:
+                inputPath: {type: string, minLength: 1, maxLength: 4096}
+      responses:
+        "202": {description: Analysis queued}
+        "400": {$ref: "#/components/responses/Error"}
+  /api/v1/analyses/{id}:
+    parameters:
+      - {$ref: "#/components/parameters/AnalysisId"}
+    get:
+      operationId: getAnalysis
+      responses:
+        "200": {description: Analysis metadata}
+        "404": {$ref: "#/components/responses/Error"}
+  /api/v1/analyses/{id}/findings:
+    parameters:
+      - {$ref: "#/components/parameters/AnalysisId"}
+    get:
+      operationId: listFindings
+      parameters:
+        - {$ref: "#/components/parameters/Cursor"}
+        - {$ref: "#/components/parameters/Limit"}
+      responses:
+        "200": {$ref: "#/components/responses/Page"}
+  /api/v1/analyses/{id}/timeline:
+    parameters:
+      - {$ref: "#/components/parameters/AnalysisId"}
+    get:
+      operationId: listTimeline
+      parameters:
+        - {$ref: "#/components/parameters/Cursor"}
+        - {$ref: "#/components/parameters/Limit"}
+      responses:
+        "200": {$ref: "#/components/responses/Page"}
+  /api/v1/analyses/{id}/artifacts:
+    parameters:
+      - {$ref: "#/components/parameters/AnalysisId"}
+    get:
+      operationId: listArtifacts
+      parameters:
+        - {$ref: "#/components/parameters/Cursor"}
+        - {$ref: "#/components/parameters/Limit"}
+      responses:
+        "200": {$ref: "#/components/responses/Page"}
+  /api/v1/analyses/{id}/analyzers:
+    parameters:
+      - {$ref: "#/components/parameters/AnalysisId"}
+    get:
+      operationId: listAnalyzerRuns
+      responses:
+        "200": {description: Analyzer run records}
+  /api/v1/analyses/{id}/events:
+    parameters:
+      - {$ref: "#/components/parameters/AnalysisId"}
+    get:
+      operationId: streamProgress
+      responses:
+        "200":
+          description: Server-Sent Events progress stream
+          content:
+            text/event-stream: {}
+  /api/v1/analyses/{id}/report:
+    parameters:
+      - {$ref: "#/components/parameters/AnalysisId"}
+    post:
+      operationId: getReportPath
+      responses:
+        "200": {description: Local report path}
+  /api/v1/analyses/{id}/redact:
+    parameters:
+      - {$ref: "#/components/parameters/AnalysisId"}
+    post:
+      operationId: createSanitizedExport
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [profile]
+              properties:
+                profile: {enum: [standard, strict]}
+      responses:
+        "201": {description: Sanitized export created}
+  /api/v1/comparisons:
+    post:
+      operationId: compareAnalyses
+      responses:
+        "201": {description: Comparison created}
+  /api/v1/plugins:
+    get:
+      operationId: listPlugins
+      responses:
+        "200": {description: Installed plugin metadata}
+  /api/v1/rules:
+    get:
+      operationId: listRules
+      responses:
+        "200": {description: Enabled rules}
+components:
+  securitySchemes:
+    bearerAuth: {type: http, scheme: bearer}
+  parameters:
+    AnalysisId:
+      name: id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+    Cursor:
+      name: cursor
+      in: query
+      schema: {type: string}
+    Limit:
+      name: limit
+      in: query
+      schema: {type: integer, minimum: 1, maximum: 200, default: 50}
+  responses:
+    Error:
+      description: Normalized error
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [error]
+            properties:
+              error:
+                type: object
+                required: [code, message]
+                properties:
+                  code: {type: string}
+                  message: {type: string}
+    Page:
+      description: Cursor-paginated result
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [items, nextCursor]
+            properties:
+              items: {type: array, items: {}}
+              nextCursor: {type: [string, "null"]}
+security:
+  - bearerAuth: []

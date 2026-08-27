@@ -1,0 +1,10 @@
+{
+  "name": "php-web-diagnostics-analyzer",
+  "version": "0.1.0",
+  "protocolVersion": "1",
+  "executable": "php bin/analyzer.php",
+  "supportedArtifactTypes": ["php-log", "php-config", "composer-manifest", "composer-lock", "nginx-access", "nginx-error", "apache-access", "apache-error"],
+  "capabilities": ["php-error-analysis", "fpm-capacity-analysis", "web-status-analysis", "configuration-review"],
+  "timeout": 120,
+  "maintainer": "Support Bundle Analyzer maintainers"
+}

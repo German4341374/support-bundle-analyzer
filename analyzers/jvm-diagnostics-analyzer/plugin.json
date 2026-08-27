@@ -1,0 +1,10 @@
+{
+  "name": "jvm-diagnostics-analyzer",
+  "version": "0.1.0",
+  "protocolVersion": "1",
+  "executable": "java -jar jvm-diagnostics-analyzer.jar",
+  "supportedArtifactTypes": ["jvm-thread-dump", "jvm-gc-log", "jvm-arguments", "jvm-properties", "jvm-heap-dump"],
+  "capabilities": ["thread-state-analysis", "deadlock-indicators", "gc-pause-analysis", "heap-artifact-guidance"],
+  "timeout": 120,
+  "maintainer": "Support Bundle Analyzer maintainers"
+}

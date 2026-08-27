@@ -1,0 +1,10 @@
+{
+  "name": "windows-diagnostics-analyzer",
+  "version": "0.1.0",
+  "protocolVersion": "1",
+  "executable": "sba-windows-analyzer",
+  "supportedArtifactTypes": ["windows-event-xml", "windows-evtx", "windows-systeminfo", "windows-network", "windows-process-list", "windows-service-list"],
+  "capabilities": ["event-grouping", "system-inventory", "network-diagnostics"],
+  "timeout": 120,
+  "maintainer": "Support Bundle Analyzer maintainers"
+}

@@ -1,0 +1,43 @@
+[build-system]
+requires = ["hatchling==1.27.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sba-log-intelligence"
+version = "0.1.0"
+description = "Streaming text-log analyzer for Universal Support Bundle Analyzer"
+requires-python = ">=3.12"
+license = "Apache-2.0"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "mypy==1.17.1",
+  "pytest==8.4.1",
+  "ruff==0.12.11"
+]
+
+[project.scripts]
+sba-log-intelligence = "sba_log_intelligence.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sba_log_intelligence"]
+
+[tool.pytest.ini_options]
+addopts = "-q --strict-markers"
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "S", "SIM"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+packages = ["sba_log_intelligence"]

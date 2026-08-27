@@ -14,6 +14,9 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.phpstan-cache/
+.phpunit.cache/
+.php-cs-fixer.cache
 target/
 build/
 obj/
@@ -27,4 +30,3 @@ workspaces/
 database-data/
 playwright-report/
 test-results/
-

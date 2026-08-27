@@ -1,0 +1,10 @@
+{
+  "name": "log-intelligence-python",
+  "version": "0.1.0",
+  "protocolVersion": "1",
+  "executable": "sba-log-intelligence",
+  "supportedArtifactTypes": ["generic-log", "json-log", "syslog", "docker-log"],
+  "capabilities": ["fingerprinting", "burst-detection", "correlation-tracking", "privacy-detection"],
+  "timeout": 120,
+  "maintainer": "Support Bundle Analyzer maintainers"
+}

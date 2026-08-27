@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark light">
+    <title>Support Bundle Analysis Report</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Universal Support Bundle Analyzer</p>
+        <h1>Investigation report</h1>
+      </div>
+      <button id="theme-toggle" type="button">Toggle theme</button>
+    </header>
+    <nav aria-label="Report sections" class="tabs">
+      <button class="tab active" data-view="overview" type="button">Overview</button>
+      <button class="tab" data-view="findings" type="button">Findings</button>
+      <button class="tab" data-view="timeline" type="button">Timeline</button>
+      <button class="tab" data-view="artifacts" type="button">Artifacts</button>
+      <button class="tab" data-view="privacy" type="button">Privacy</button>
+    </nav>
+    <main>
+      <section id="overview" class="view active" aria-labelledby="overview-title">
+        <h2 id="overview-title">Overview</h2>
+        <div id="summary" class="summary-grid"></div>
+        <h3>Evidence notice</h3>
+        <p>Findings describe observations and possible contributing conditions. They are not guaranteed root-cause conclusions.</p>
+      </section>
+      <section id="findings" class="view" aria-labelledby="findings-title">
+        <h2 id="findings-title">Findings</h2>
+        <div class="filters">
+          <label>Search <input id="finding-search" type="search" autocomplete="off"></label>
+          <label>Severity <select id="severity-filter"><option value="">All</option><option>critical</option><option>high</option><option>medium</option><option>low</option><option>info</option></select></label>
+        </div>
+        <div id="finding-list" class="stack"></div>
+      </section>
+      <section id="timeline" class="view" aria-labelledby="timeline-title">
+        <h2 id="timeline-title">Timeline</h2>
+        <p class="muted">The offline viewer renders a bounded page. Use the local API for very large timelines.</p>
+        <div id="timeline-list" class="table-wrap"></div>
+      </section>
+      <section id="artifacts" class="view" aria-labelledby="artifacts-title">
+        <h2 id="artifacts-title">Artifacts</h2>
+        <label>Search <input id="artifact-search" type="search" autocomplete="off"></label>
+        <div id="artifact-list" class="table-wrap"></div>
+      </section>
+      <section id="privacy" class="view" aria-labelledby="privacy-title">
+        <h2 id="privacy-title">Privacy review</h2>
+        <p class="warning">Review sanitized exports before sharing. Detection cannot guarantee that every sensitive value was found.</p>
+        <div id="privacy-list" class="table-wrap"></div>
+      </section>
+    </main>
+    <noscript>This report requires JavaScript but does not require a network connection.</noscript>
+    <script src="data.js"></script>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
+

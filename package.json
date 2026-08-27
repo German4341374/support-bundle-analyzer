@@ -1,0 +1,28 @@
+{
+  "name": "support-bundle-analyzer-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "workspaces": [
+    "apps/api"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace @support-bundle-analyzer/api",
+    "check": "npm run lint && npm run typecheck && npm test",
+    "dev": "npm run dev --workspace @support-bundle-analyzer/api",
+    "format": "prettier --write \"apps/api/**/*.{ts,json}\" \"*.json\"",
+    "format:check": "prettier --check \"apps/api/**/*.{ts,json}\" \"*.json\"",
+    "lint": "eslint apps/api/src apps/api/test",
+    "test": "npm test --workspace @support-bundle-analyzer/api",
+    "typecheck": "npm run typecheck --workspace @support-bundle-analyzer/api"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.3",
+    "eslint": "9.39.3",
+    "globals": "16.3.0",
+    "prettier": "3.6.2",
+    "typescript-eslint": "8.42.0"
+  }
+}

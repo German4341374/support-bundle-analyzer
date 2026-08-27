@@ -1,0 +1,61 @@
+name: Integration
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: integration-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  vertical-slice:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:17.6-alpine3.22
+        env:
+          POSTGRES_DB: sba_test
+          POSTGRES_USER: sba_test
+          POSTGRES_PASSWORD: synthetic-ci-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U sba_test -d sba_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Run database migrations and seed
+        env:
+          PGPASSWORD: synthetic-ci-password
+        run: |
+          psql -h 127.0.0.1 -U sba_test -d sba_test -v ON_ERROR_STOP=1 -f database/migrations/001_initial.up.sql
+          psql -h 127.0.0.1 -U sba_test -d sba_test -v ON_ERROR_STOP=1 -f database/seed/development.sql
+          test "$(psql -h 127.0.0.1 -U sba_test -d sba_test -Atc 'SELECT count(*) FROM artifact_types')" -ge 10
+      - name: Build and run demo analysis
+        run: |
+          go build -trimpath -o bin/support-bundle-analyzer ./apps/cli
+          ./bin/support-bundle-analyzer generate-demo .tmp-database-outage.zip
+          ./bin/support-bundle-analyzer analyze .tmp-database-outage.zip --output .tmp-analysis --timezone UTC --quiet
+          test -s .tmp-analysis/manifest.json
+          test -s .tmp-analysis/findings.jsonl
+          test -s .tmp-analysis/report/index.html
+          ./bin/support-bundle-analyzer redact .tmp-analysis --profile strict --output .tmp-sanitized
+          test -s .tmp-sanitized/redaction-manifest.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: sanitized-demo-${{ github.sha }}
+          path: .tmp-sanitized
+          retention-days: 7

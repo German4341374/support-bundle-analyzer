@@ -1,0 +1,33 @@
+name: New analyzer proposal
+description: Propose support for a diagnostic artifact type without attaching private data.
+title: "feat(analyzer): "
+labels: [enhancement, analyzer]
+body:
+  - type: input
+    id: artifact
+    attributes:
+      label: Artifact type
+      placeholder: "Example: nginx error log"
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence model
+      description: Explain fields, deterministic findings, and source ranges.
+    validations:
+      required: true
+  - type: textarea
+    id: fixture
+    attributes:
+      label: Synthetic fixture plan
+      description: Do not attach customer or production diagnostics.
+    validations:
+      required: true
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy confirmation
+      options:
+        - label: I will use only synthetic, non-personal fixtures.
+          required: true

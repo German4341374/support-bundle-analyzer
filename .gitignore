@@ -30,3 +30,13 @@ workspaces/
 database-data/
 playwright-report/
 test-results/
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json

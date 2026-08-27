@@ -1,0 +1,57 @@
+name: Deployment validation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deployment-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  helm-terraform:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: azure/setup-helm@bf6a7d304bc2fdb57e0331155b7ebf2c504acf0a # v4
+        with:
+          version: v3.18.6
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: 1.15.8
+      - run: helm lint deploy/helm/support-bundle-analyzer
+      - run: helm template sba deploy/helm/support-bundle-analyzer --set auth.existingSecret=synthetic-secret > rendered.yaml
+      - run: terraform -chdir=deploy/terraform fmt -check -recursive
+      - run: terraform -chdir=deploy/terraform init -backend=false
+      - run: terraform -chdir=deploy/terraform validate
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: rendered-deployment-${{ github.sha }}
+          path: rendered.yaml
+          retention-days: 14
+
+  kind-smoke:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: helm/kind-action@0b5c88445f37b7e12a2ce1ecca7805b9046a74db # v1
+        with:
+          cluster_name: sba-smoke
+      - uses: azure/setup-helm@bf6a7d304bc2fdb57e0331155b7ebf2c504acf0a # v4
+        with:
+          version: v3.18.6
+      - run: |
+          docker build -t support-bundle-analyzer:smoke .
+          kind load docker-image support-bundle-analyzer:smoke --name sba-smoke
+          kubectl create namespace sba
+          kubectl -n sba create secret generic support-bundle-analyzer-auth --from-literal=access-token=synthetic-kind-token-123456
+          helm upgrade --install sba deploy/helm/support-bundle-analyzer -n sba \
+            --set image.repository=support-bundle-analyzer --set image.tag=smoke --set image.pullPolicy=Never --wait --timeout 180s
+          kubectl -n sba rollout status deployment/support-bundle-analyzer --timeout=120s

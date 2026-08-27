@@ -1,0 +1,13 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Generated dependency and build directories"
+paths = [
+  '''(^|/)node_modules/''',
+  '''(^|/)vendor/''',
+  '''(^|/)target/''',
+  '''(^|/)(bin|obj|dist|coverage)/''',
+  '''(^|/)\.terraform/''',
+  '''(^|/)\.tmp/''',
+]

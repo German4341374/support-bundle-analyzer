@@ -1,0 +1,21 @@
+name: Feature proposal
+description: Propose a focused analyzer, rule, workflow, or documentation improvement
+title: "feat: "
+labels: [enhancement, triage]
+body:
+  - type: textarea
+    id: problem
+    attributes: {label: Support problem, description: "Describe the investigation problem, not only a preferred solution."}
+    validations: {required: true}
+  - type: textarea
+    id: evidence
+    attributes: {label: Available evidence, description: "Which synthetic artifact fields make this feature possible?"}
+    validations: {required: true}
+  - type: textarea
+    id: design
+    attributes: {label: Proposed design and trade-offs}
+    validations: {required: true}
+  - type: textarea
+    id: security
+    attributes: {label: Privacy, security, and resource impact}
+    validations: {required: true}

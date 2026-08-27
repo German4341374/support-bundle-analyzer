@@ -1,0 +1,13 @@
+.git
+.github
+.tmp
+.venv
+**/bin
+**/build
+**/coverage
+**/node_modules
+**/obj
+**/target
+**/vendor
+analysis-workspace
+workspaces

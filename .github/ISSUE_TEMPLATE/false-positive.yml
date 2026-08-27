@@ -1,0 +1,31 @@
+name: False positive
+description: Report an incorrect finding or sensitive-data match using a synthetic reproduction.
+title: "fix(rules): "
+labels: [bug, false-positive]
+body:
+  - type: input
+    id: rule
+    attributes:
+      label: Rule ID or detector category
+    validations:
+      required: true
+  - type: textarea
+    id: synthetic
+    attributes:
+      label: Synthetic reproduction
+      description: Replace every real identifier and secret.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: checkboxes
+    id: safe
+    attributes:
+      label: Data safety
+      options:
+        - label: This issue contains no real support bundle data, credentials, or personal information.
+          required: true

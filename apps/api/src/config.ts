@@ -9,6 +9,7 @@ export interface Config {
   workspaceRoot: string;
   inputRoot: string;
   coreBinary: string;
+  analysisTimeoutMs: number;
 }
 
 const loopbackHosts = new Set(["127.0.0.1", "::1", "localhost"]);
@@ -18,6 +19,10 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const port = Number.parseInt(env.SBA_PORT ?? "8080", 10);
   const allowRemote = env.SBA_ALLOW_REMOTE === "true";
   const accessToken = env.SBA_ACCESS_TOKEN;
+  const analysisTimeoutSeconds = Number.parseInt(
+    env.SBA_ANALYSIS_TIMEOUT_SECONDS ?? "900",
+    10,
+  );
   if (!Number.isInteger(port) || port < 1 || port > 65535) {
     throw new Error("SBA_PORT must be an integer between 1 and 65535");
   }
@@ -32,6 +37,15 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   if (isIP(host) === 0 && host !== "localhost") {
     throw new Error("SBA_HOST must be localhost or an IP address");
   }
+  if (
+    !Number.isInteger(analysisTimeoutSeconds) ||
+    analysisTimeoutSeconds < 1 ||
+    analysisTimeoutSeconds > 86_400
+  ) {
+    throw new Error(
+      "SBA_ANALYSIS_TIMEOUT_SECONDS must be an integer between 1 and 86400",
+    );
+  }
   return {
     host,
     port,
@@ -40,5 +54,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     workspaceRoot: resolve(env.SBA_WORKSPACE_ROOT ?? ".sba/workspaces"),
     inputRoot: resolve(env.SBA_INPUT_ROOT ?? "."),
     coreBinary: resolve(env.SBA_CORE_BINARY ?? "support-bundle-analyzer"),
+    analysisTimeoutMs: analysisTimeoutSeconds * 1000,
   };
 }

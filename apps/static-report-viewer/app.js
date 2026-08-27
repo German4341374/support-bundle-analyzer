@@ -11,7 +11,11 @@ const table = (headers, rows) => {
   const result = element('table');
   const head = element('thead');
   const headRow = element('tr');
-  headers.forEach((header) => headRow.append(element('th', header)));
+  headers.forEach((header) => {
+    const cell = element('th', header);
+    cell.scope = 'col';
+    headRow.append(cell);
+  });
   head.append(headRow);
   result.append(head);
   const body = element('tbody');
@@ -25,9 +29,15 @@ const table = (headers, rows) => {
 };
 
 document.querySelectorAll('.tab').forEach((button) => {
+  button.setAttribute('aria-selected', String(button.classList.contains('active')));
   button.addEventListener('click', () => {
-    document.querySelectorAll('.tab, .view').forEach((item) => item.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach((item) => {
+      item.classList.remove('active');
+      item.setAttribute('aria-selected', 'false');
+    });
+    document.querySelectorAll('.view').forEach((item) => item.classList.remove('active'));
     button.classList.add('active');
+    button.setAttribute('aria-selected', 'true');
     document.getElementById(button.dataset.view).classList.add('active');
   });
 });
@@ -62,10 +72,23 @@ const renderFindings = () => {
       details.append(summary, element('p', finding.summary), element('p', finding.explanation));
       const evidenceTitle = element('h4', 'Evidence');
       details.append(evidenceTitle);
+      const evidenceText = [];
       finding.evidence.forEach((evidence) => {
         const location = [evidence.artifact, evidence.lineStart ? `lines ${evidence.lineStart}-${evidence.lineEnd || evidence.lineStart}` : '', evidence.jsonPointer || ''].filter(Boolean).join(' · ');
+        evidenceText.push(`${location}\n${evidence.excerpt || ''}`);
         details.append(element('p', `${location}\n${evidence.excerpt || ''}`, 'evidence'));
       });
+      const copy = element('button', 'Copy evidence', 'copy-evidence');
+      copy.type = 'button';
+      copy.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(evidenceText.join('\n\n'));
+          copy.textContent = 'Copied';
+        } catch {
+          copy.textContent = 'Clipboard unavailable';
+        }
+      });
+      details.append(copy);
       const next = element('ul');
       finding.nextSteps.forEach((step) => next.append(element('li', step)));
       details.append(element('h4', 'Next investigation steps'), next);
@@ -96,4 +119,3 @@ document.getElementById('privacy-list').append(table(
   ['Artifact', 'Sensitive data type', 'Matches'],
   report.sensitive.map((item) => [item.artifact, item.kind, item.count]),
 ));
-

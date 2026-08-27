@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strings"
 	"syscall"
 
 	"github.com/German4341374/support-bundle-analyzer/internal/compare"
@@ -43,7 +44,7 @@ func run(arguments []string) int {
 		err = analyzeCommand(arguments[1:])
 	case "report":
 		err = reportCommand(arguments[1:])
-	case "compare":
+	case "compare", "diff":
 		err = compareCommand(arguments[1:])
 	case "redact":
 		err = redactCommand(arguments[1:])
@@ -78,7 +79,9 @@ func analyzeCommand(arguments []string) error {
 	output := set.String("output", "analysis-workspace", "new workspace directory")
 	timezone := set.String("timezone", "UTC", "IANA timezone for timestamps without an offset")
 	jsonOutput := set.Bool("json", false, "write the result summary as JSON")
-	if err := set.Parse(arguments); err != nil {
+	quiet := set.Bool("quiet", false, "suppress progress output")
+	_ = set.Bool("no-color", false, "disable color output (output is currently color-free)")
+	if err := set.Parse(interspersed(arguments, map[string]bool{"output": true, "timezone": true, "json": false, "quiet": false, "no-color": false})); err != nil {
 		return err
 	}
 	if set.NArg() != 1 {
@@ -89,7 +92,7 @@ func analyzeCommand(arguments []string) error {
 	result, err := pipeline.Run(ctx, pipeline.Options{
 		Input: set.Arg(0), Output: *output, Timezone: *timezone,
 		Progress: func(stage, message string) {
-			if !*jsonOutput {
+			if !*jsonOutput && !*quiet {
 				fmt.Fprintf(os.Stderr, "[%s] %s\n", stage, message)
 			}
 		},
@@ -108,7 +111,7 @@ func analyzeCommand(arguments []string) error {
 func reportCommand(arguments []string) error {
 	set := flag.NewFlagSet("report", flag.ContinueOnError)
 	output := set.String("output", "", "report output directory")
-	if err := set.Parse(arguments); err != nil {
+	if err := set.Parse(interspersed(arguments, map[string]bool{"output": true})); err != nil {
 		return err
 	}
 	if set.NArg() != 1 {
@@ -132,7 +135,7 @@ func reportCommand(arguments []string) error {
 func compareCommand(arguments []string) error {
 	set := flag.NewFlagSet("compare", flag.ContinueOnError)
 	output := set.String("output", "comparison.json", "JSON comparison output")
-	if err := set.Parse(arguments); err != nil {
+	if err := set.Parse(interspersed(arguments, map[string]bool{"output": true})); err != nil {
 		return err
 	}
 	if set.NArg() != 2 {
@@ -162,7 +165,7 @@ func redactCommand(arguments []string) error {
 	set := flag.NewFlagSet("redact", flag.ContinueOnError)
 	output := set.String("output", "sanitized-workspace", "new sanitized workspace directory")
 	profile := set.String("profile", "standard", "standard or strict")
-	if err := set.Parse(arguments); err != nil {
+	if err := set.Parse(interspersed(arguments, map[string]bool{"output": true, "profile": true})); err != nil {
 		return err
 	}
 	if set.NArg() != 1 {
@@ -178,16 +181,17 @@ func redactCommand(arguments []string) error {
 
 func demoCommand(arguments []string) error {
 	set := flag.NewFlagSet("generate-demo", flag.ContinueOnError)
-	if err := set.Parse(arguments); err != nil {
+	scenario := set.String("scenario", "database-outage", "database-outage or healthy")
+	if err := set.Parse(interspersed(arguments, map[string]bool{"scenario": true})); err != nil {
 		return err
 	}
 	if set.NArg() != 1 {
-		return fmt.Errorf("usage: support-bundle-analyzer generate-demo <output.zip>")
+		return fmt.Errorf("usage: support-bundle-analyzer generate-demo <output.zip> [--scenario database-outage|healthy]")
 	}
-	if err := synthetic.WriteBundle(set.Arg(0)); err != nil {
+	if err := synthetic.WriteBundleScenario(set.Arg(0), *scenario); err != nil {
 		return err
 	}
-	fmt.Printf("Synthetic support bundle written to %s\n", set.Arg(0))
+	fmt.Printf("Synthetic %s support bundle written to %s\n", *scenario, set.Arg(0))
 	return nil
 }
 
@@ -197,10 +201,35 @@ func writeJSON(target *os.File, value any) error {
 	return encoder.Encode(value)
 }
 
+// interspersed keeps positional arguments after flags compatible with the documented CLI examples.
+// The standard flag package intentionally stops at the first positional argument.
+func interspersed(arguments []string, known map[string]bool) []string {
+	flags := make([]string, 0, len(arguments))
+	positionals := make([]string, 0, len(arguments))
+	for index := 0; index < len(arguments); index++ {
+		argument := arguments[index]
+		if len(argument) < 3 || argument[:2] != "--" {
+			positionals = append(positionals, argument)
+			continue
+		}
+		name := argument[2:]
+		if equal := strings.IndexByte(name, '='); equal >= 0 {
+			name = name[:equal]
+		}
+		takesValue, recognized := known[name]
+		flags = append(flags, argument)
+		if recognized && takesValue && !strings.Contains(argument, "=") && index+1 < len(arguments) {
+			index++
+			flags = append(flags, arguments[index])
+		}
+	}
+	return append(flags, positionals...)
+}
+
 func usage(target *os.File) {
 	fmt.Fprintln(target, "Universal Support Bundle Analyzer")
 	fmt.Fprintln(target, "Usage: support-bundle-analyzer <command> [options]")
-	fmt.Fprintln(target, "Commands: analyze, report, compare, redact, generate-demo, version")
+	fmt.Fprintln(target, "Commands: analyze, report, diff, redact, generate-demo, version")
 	fmt.Fprintln(target, "Run 'support-bundle-analyzer <command> -h' for command options.")
 	fmt.Fprintln(target, "Security: bundle content is never executed; review sanitized exports before sharing.")
 }

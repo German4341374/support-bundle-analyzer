@@ -3,6 +3,7 @@ package analyze
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -28,6 +29,23 @@ func TestAnalyzeLogGroupsEvidenceAndBuildsTimeline(t *testing.T) {
 	}
 	if result.Findings[0].Evidence[0].LineStart != 1 || result.Findings[0].Evidence[0].LineEnd != 2 {
 		t.Fatalf("finding evidence is not grouped: %+v", result.Findings[0].Evidence)
+	}
+}
+
+func BenchmarkAnalyzeLog1MiB(b *testing.B) {
+	root := b.TempDir()
+	name := filepath.Join(root, "benchmark.log")
+	line := "2026-08-01T14:31:08Z ERROR service=api request_id=req-123 database connection refused user=1457\n"
+	content := strings.Repeat(line, (1<<20)/len(line))
+	if err := os.WriteFile(name, []byte(content), 0o600); err != nil {
+		b.Fatal(err)
+	}
+	artifact := model.Artifact{Path: "benchmark.log", SHA256: strings.Repeat("a", 64)}
+	limits := model.DefaultLimits()
+	for b.Loop() {
+		if _, err := AnalyzeLog(name, artifact, time.UTC, limits, redact.NewDetector()); err != nil {
+			b.Fatal(err)
+		}
 	}
 }
 

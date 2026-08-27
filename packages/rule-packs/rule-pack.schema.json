@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/German4341374/support-bundle-analyzer/schemas/rule-pack-v1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "name", "rules"],
+  "properties": {
+    "version": {"const": "1"},
+    "name": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]+$"},
+    "rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "category", "severity", "pattern", "confidence"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]+$"},
+          "title": {"type": "string", "minLength": 3},
+          "category": {"type": "string", "minLength": 2},
+          "severity": {"enum": ["critical", "high", "medium", "low", "info"]},
+          "pattern": {"type": "string", "minLength": 1},
+          "confidence": {"enum": ["strong", "moderate", "weak"]}
+        }
+      }
+    }
+  }
+}

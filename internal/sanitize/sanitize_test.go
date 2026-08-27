@@ -3,6 +3,7 @@ package sanitize
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -48,5 +49,26 @@ func TestWorkspaceRefusesOverwrite(t *testing.T) {
 	destination := t.TempDir()
 	if _, err := Workspace(source, destination, "standard"); err == nil {
 		t.Fatal("expected overwrite refusal")
+	}
+}
+
+func TestWorkspaceRejectsSymlinkArtifacts(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("creating symlinks normally requires elevated Windows privileges")
+	}
+	source := t.TempDir()
+	if err := os.Mkdir(filepath.Join(source, "artifacts"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	target := filepath.Join(t.TempDir(), "outside.txt")
+	if err := os.WriteFile(target, []byte("outside secret"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(target, filepath.Join(source, "artifacts", "linked.log")); err != nil {
+		t.Fatal(err)
+	}
+	_, err := Workspace(source, filepath.Join(t.TempDir(), "sanitized"), "strict")
+	if err == nil || !strings.Contains(err.Error(), "non-regular") {
+		t.Fatalf("expected non-regular artifact rejection, got %v", err)
 	}
 }

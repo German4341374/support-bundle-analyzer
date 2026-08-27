@@ -123,9 +123,25 @@ type RedactionSummary struct {
 }
 
 type Comparison struct {
-	BaselineAnalysis string    `json:"baselineAnalysis"`
-	IncidentAnalysis string    `json:"incidentAnalysis"`
-	NewFindings      []Finding `json:"newFindings"`
-	ResolvedFindings []Finding `json:"resolvedFindings"`
-	UnchangedRules   []string  `json:"unchangedRules"`
+	BaselineAnalysis  string           `json:"baselineAnalysis"`
+	IncidentAnalysis  string           `json:"incidentAnalysis"`
+	BaselineArtifacts int              `json:"baselineArtifacts"`
+	IncidentArtifacts int              `json:"incidentArtifacts"`
+	BaselineFindings  int              `json:"baselineFindings"`
+	IncidentFindings  int              `json:"incidentFindings"`
+	BaselineEvents    int              `json:"baselineTimelineEvents"`
+	IncidentEvents    int              `json:"incidentTimelineEvents"`
+	SeverityDelta     map[string]int   `json:"severityDelta"`
+	AddedArtifacts    []string         `json:"addedArtifacts"`
+	RemovedArtifacts  []string         `json:"removedArtifacts"`
+	ChangedArtifacts  []ArtifactChange `json:"changedArtifacts"`
+	NewFindings       []Finding        `json:"newFindings"`
+	ResolvedFindings  []Finding        `json:"resolvedFindings"`
+	UnchangedRules    []string         `json:"unchangedRules"`
+}
+
+type ArtifactChange struct {
+	Path           string `json:"path"`
+	BaselineSHA256 string `json:"baselineSha256"`
+	IncidentSHA256 string `json:"incidentSha256"`
 }

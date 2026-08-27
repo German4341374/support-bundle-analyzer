@@ -32,6 +32,8 @@ type Manifest struct {
 	Summary       map[string]int `json:"summary"`
 }
 
+const maxSanitizableFileBytes int64 = 64 << 20
+
 func Workspace(source, destination, profile string) (Manifest, error) {
 	if profile != "standard" && profile != "strict" {
 		return Manifest{}, fmt.Errorf("unsupported redaction profile %q", profile)
@@ -65,6 +67,13 @@ func Workspace(source, destination, profile string) (Manifest, error) {
 		if entry.IsDir() {
 			return nil
 		}
+		info, err := entry.Info()
+		if err != nil {
+			return err
+		}
+		if entry.Type()&os.ModeSymlink != 0 || !info.Mode().IsRegular() {
+			return fmt.Errorf("workspace contains unsupported non-regular artifact: %s", entry.Name())
+		}
 		relative, err := filepath.Rel(sourceArtifacts, path)
 		if err != nil {
 			return err
@@ -75,6 +84,12 @@ func Workspace(source, destination, profile string) (Manifest, error) {
 			return err
 		}
 		result := FileResult{Path: relative, SourceSHA256: sourceHash}
+		if info.Size() > maxSanitizableFileBytes {
+			result.Status = "excluded"
+			result.Reason = "artifact exceeds the 64 MiB sanitization limit"
+			manifest.Files = append(manifest.Files, result)
+			return nil
+		}
 		isText, err := textFile(path)
 		if err != nil {
 			return err

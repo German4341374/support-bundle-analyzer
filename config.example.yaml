@@ -1,0 +1,19 @@
+version: 1
+timezone: UTC
+workspaceRoot: .sba/workspaces
+limits:
+  maxFiles: 100000
+  maxTotalBytes: 5368709120
+  maxSingleFileBytes: 1073741824
+  maxNestedDepth: 1
+  maxCompressionRatio: 250
+  maxFilenameBytes: 512
+  maxTimelineEvents: 100000
+  maxFindings: 10000
+  pluginTimeoutSeconds: 120
+redaction:
+  defaultProfile: standard
+plugins:
+  directories:
+    - analyzers
+  allowNetwork: false

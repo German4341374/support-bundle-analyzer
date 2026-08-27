@@ -21,4 +21,10 @@ describe("configuration", () => {
       }),
     ).toThrow("SBA_ACCESS_TOKEN");
   });
+
+  it("validates the analysis timeout", () => {
+    expect(() => loadConfig({ SBA_ANALYSIS_TIMEOUT_SECONDS: "0" })).toThrow(
+      "SBA_ANALYSIS_TIMEOUT_SECONDS",
+    );
+  });
 });

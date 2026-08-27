@@ -1,0 +1,23 @@
+{
+  "$schema": "./rule-pack.schema.json",
+  "version": "1",
+  "name": "builtin-log-rules",
+  "rules": [
+    {
+      "id": "LOG_CONNECTION_REFUSED",
+      "title": "Repeated connection failures",
+      "category": "connectivity",
+      "severity": "high",
+      "pattern": "connection (refused|reset)|ECONNREFUSED",
+      "confidence": "strong"
+    },
+    {
+      "id": "LOG_TIMEOUT",
+      "title": "Request or dependency timeouts observed",
+      "category": "latency",
+      "severity": "medium",
+      "pattern": "timed? out|deadline exceeded|upstream timeout|ETIMEDOUT",
+      "confidence": "strong"
+    }
+  ]
+}

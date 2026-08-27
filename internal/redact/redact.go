@@ -13,10 +13,9 @@ type Detector struct {
 }
 
 type pattern struct {
-	kind        string
-	re          *regexp.Regexp
-	strictOnly  bool
-	replacement string
+	kind       string
+	re         *regexp.Regexp
+	strictOnly bool
 }
 
 type MatchCount struct {

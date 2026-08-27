@@ -45,6 +45,7 @@ export async function runAnalysis(
           match?.[2] ?? "Analyzer reported progress",
         );
       },
+      config.analysisTimeoutMs,
     );
     store.update(id, {
       status: "completed",
@@ -67,6 +68,7 @@ export function execute(
   binary: string,
   args: string[],
   progress?: (line: string) => void,
+  timeoutMs = 900_000,
 ): Promise<void> {
   return new Promise((resolvePromise, reject) => {
     const child = spawn(binary, args, {
@@ -74,14 +76,27 @@ export function execute(
       stdio: ["ignore", "ignore", "pipe"],
       windowsHide: true,
     });
+    let timedOut = false;
+    const timeout = setTimeout(() => {
+      timedOut = true;
+      child.kill();
+    }, timeoutMs);
     let stderr = "";
     child.stderr.setEncoding("utf8");
     child.stderr.on("data", (chunk: string) => {
       stderr = (stderr + chunk).slice(-16_384);
       for (const line of chunk.split(/\r?\n/).filter(Boolean)) progress?.(line);
     });
-    child.once("error", reject);
+    child.once("error", (error) => {
+      clearTimeout(timeout);
+      reject(error);
+    });
     child.once("exit", (code, signal) => {
+      clearTimeout(timeout);
+      if (timedOut) {
+        reject(new Error(`analyzer exceeded timeout of ${timeoutMs} ms`));
+        return;
+      }
       if (code === 0) resolvePromise();
       else
         reject(

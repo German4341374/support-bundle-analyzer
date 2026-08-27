@@ -1,8 +1,9 @@
 import { timingSafeEqual } from "node:crypto";
+import { mkdir, readFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import Fastify, { type FastifyError, type FastifyInstance } from "fastify";
 import type { Config } from "./config.js";
-import { runAnalysis } from "./runner.js";
+import { execute, runAnalysis } from "./runner.js";
 import { SessionStore } from "./store.js";
 import { readJsonLinesPage, readManifest } from "./workspace.js";
 
@@ -19,6 +20,15 @@ interface PageQuery {
   limit?: number;
 }
 
+interface RedactBody {
+  profile: "standard" | "strict";
+}
+
+interface ComparisonBody {
+  baselineAnalysisId: string;
+  incidentAnalysisId: string;
+}
+
 export function buildApp(
   config: Config,
   store = new SessionStore(),
@@ -33,7 +43,12 @@ export function buildApp(
   });
 
   app.addHook("onRequest", async (request, reply) => {
-    if (!config.allowRemote || request.url === "/health") return;
+    if (
+      !config.allowRemote ||
+      request.url === "/health" ||
+      request.url === "/ready"
+    )
+      return;
     const authorization = request.headers.authorization ?? "";
     const supplied = authorization.startsWith("Bearer ")
       ? authorization.slice(7)
@@ -218,6 +233,10 @@ export function buildApp(
         Connection: "keep-alive",
       });
       for (const event of session.events) reply.raw.write(formatSSE(event));
+      if (session.status === "completed" || session.status === "failed") {
+        reply.raw.end();
+        return;
+      }
       const unsubscribe = store.subscribe(session.id, (event) => {
         reply.raw.write(formatSSE(event));
         if (
@@ -243,6 +262,118 @@ export function buildApp(
       return {
         reportPath: join(session.workspacePath, "report", "index.html"),
       };
+    },
+  );
+
+  app.post<{ Params: AnalysisParams; Body: RedactBody }>(
+    "/api/v1/analyses/:id/redact",
+    {
+      schema: {
+        body: {
+          type: "object",
+          additionalProperties: false,
+          required: ["profile"],
+          properties: { profile: { enum: ["standard", "strict"] } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const session = store.get(request.params.id);
+      if (!session)
+        return reply
+          .code(404)
+          .send(
+            errorBody("ANALYSIS_NOT_FOUND", "Analysis session was not found"),
+          );
+      if (session.status !== "completed")
+        return reply
+          .code(409)
+          .send(
+            errorBody("ANALYSIS_NOT_COMPLETE", "Analysis has not completed"),
+          );
+      const output = join(
+        config.workspaceRoot,
+        "sanitized",
+        `${session.id}-${request.body.profile}`,
+      );
+      await mkdir(join(config.workspaceRoot, "sanitized"), {
+        recursive: true,
+        mode: 0o700,
+      });
+      await execute(
+        config.coreBinary,
+        [
+          "redact",
+          session.workspacePath,
+          "--profile",
+          request.body.profile,
+          "--output",
+          output,
+        ],
+        undefined,
+        config.analysisTimeoutMs,
+      );
+      return reply
+        .code(201)
+        .send({ profile: request.body.profile, path: output });
+    },
+  );
+
+  app.post<{ Body: ComparisonBody }>(
+    "/api/v1/comparisons",
+    {
+      schema: {
+        body: {
+          type: "object",
+          additionalProperties: false,
+          required: ["baselineAnalysisId", "incidentAnalysisId"],
+          properties: {
+            baselineAnalysisId: { type: "string", minLength: 1 },
+            incidentAnalysisId: { type: "string", minLength: 1 },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const baseline = store.get(request.body.baselineAnalysisId);
+      const incident = store.get(request.body.incidentAnalysisId);
+      if (!baseline || !incident)
+        return reply
+          .code(404)
+          .send(
+            errorBody(
+              "ANALYSIS_NOT_FOUND",
+              "One or more analyses were not found",
+            ),
+          );
+      if (baseline.status !== "completed" || incident.status !== "completed")
+        return reply
+          .code(409)
+          .send(
+            errorBody(
+              "ANALYSIS_NOT_COMPLETE",
+              "Both analyses must be complete",
+            ),
+          );
+      const output = join(
+        config.workspaceRoot,
+        `comparison-${baseline.id}-${incident.id}.json`,
+      );
+      await execute(
+        config.coreBinary,
+        [
+          "diff",
+          baseline.workspacePath,
+          incident.workspacePath,
+          "--output",
+          output,
+        ],
+        undefined,
+        config.analysisTimeoutMs,
+      );
+      return reply
+        .code(201)
+        .send(JSON.parse(await readFile(output, "utf8")) as unknown);
     },
   );
 

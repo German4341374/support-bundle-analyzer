@@ -21,3 +21,19 @@ func TestWriteBundleIsReadable(t *testing.T) {
 		t.Fatalf("got %d files", len(reader.File))
 	}
 }
+
+func TestWriteHealthyBundleIsReadable(t *testing.T) {
+	t.Parallel()
+	name := filepath.Join(t.TempDir(), "healthy.zip")
+	if err := WriteBundleScenario(name, "healthy"); err != nil {
+		t.Fatal(err)
+	}
+	reader, err := zip.OpenReader(name)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer reader.Close()
+	if len(reader.File) != len(healthyDemoFiles) {
+		t.Fatalf("got %d files, want %d", len(reader.File), len(healthyDemoFiles))
+	}
+}

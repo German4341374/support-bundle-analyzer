@@ -216,11 +216,10 @@ func extractTAR(input, format string, state *extractionState) error {
 		if err != nil {
 			return apperror.Wrap(apperror.ArtifactMalformed, "cannot read TAR archive", err)
 		}
-		switch header.Typeflag {
-		case tar.TypeDir:
+		if header.FileInfo().IsDir() {
 			continue
-		case tar.TypeReg, tar.TypeRegA:
-		default:
+		}
+		if !header.FileInfo().Mode().IsRegular() {
 			return apperror.New(apperror.ArchiveUnsafeEntry, "links, devices, and special TAR entries are not extracted")
 		}
 		destination, err := state.reserve(header.Name, header.Size)

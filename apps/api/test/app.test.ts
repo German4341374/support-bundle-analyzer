@@ -10,6 +10,7 @@ const config: Config = {
   workspaceRoot: resolve(".tmp/api-tests"),
   inputRoot: resolve("."),
   coreBinary: resolve(".tmp/missing-binary"),
+  analysisTimeoutMs: 5_000,
 };
 
 describe("API", () => {
@@ -57,12 +58,20 @@ describe("API", () => {
     });
     expect(
       (await remote.inject({ method: "GET", url: "/ready" })).statusCode,
+    ).toBe(200);
+    expect(
+      (
+        await remote.inject({
+          method: "GET",
+          url: "/api/v1/analyses",
+        })
+      ).statusCode,
     ).toBe(401);
     expect(
       (
         await remote.inject({
           method: "GET",
-          url: "/ready",
+          url: "/api/v1/analyses",
           headers: { authorization: "Bearer 012345678901234567890123" },
         })
       ).statusCode,

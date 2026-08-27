@@ -53,10 +53,10 @@ main { max-width: 1180px; margin: 0 auto; padding: 1.5rem; }
 .badge.high, .badge.critical { border-color: var(--danger); color: var(--danger); }
 .badge.medium { border-color: var(--warning); color: var(--warning); }
 .evidence { white-space: pre-wrap; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem; overflow-wrap: anywhere; }
+.copy-evidence { margin-bottom: 0.5rem; }
 .table-wrap { overflow-x: auto; margin-top: 1rem; }
 table { width: 100%; border-collapse: collapse; }
 th, td { padding: 0.65rem; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
 th { color: var(--muted); font-weight: 600; }
 .warning { border-left: 3px solid var(--warning); padding-left: 0.8rem; }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
-

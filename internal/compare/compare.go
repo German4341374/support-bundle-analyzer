@@ -7,7 +7,50 @@ import (
 )
 
 func Workspaces(baseline, incident model.Workspace) model.Comparison {
-	result := model.Comparison{BaselineAnalysis: baseline.Manifest.AnalysisID, IncidentAnalysis: incident.Manifest.AnalysisID}
+	result := model.Comparison{
+		BaselineAnalysis:  baseline.Manifest.AnalysisID,
+		IncidentAnalysis:  incident.Manifest.AnalysisID,
+		BaselineArtifacts: len(baseline.Manifest.Artifacts),
+		IncidentArtifacts: len(incident.Manifest.Artifacts),
+		BaselineFindings:  len(baseline.Findings),
+		IncidentFindings:  len(incident.Findings),
+		BaselineEvents:    len(baseline.Timeline),
+		IncidentEvents:    len(incident.Timeline),
+		SeverityDelta:     make(map[string]int),
+		AddedArtifacts:    []string{},
+		RemovedArtifacts:  []string{},
+		ChangedArtifacts:  []model.ArtifactChange{},
+		NewFindings:       []model.Finding{},
+		ResolvedFindings:  []model.Finding{},
+		UnchangedRules:    []string{},
+	}
+	for _, finding := range baseline.Findings {
+		result.SeverityDelta[finding.Severity]--
+	}
+	for _, finding := range incident.Findings {
+		result.SeverityDelta[finding.Severity]++
+	}
+	baselineArtifacts := make(map[string]model.Artifact, len(baseline.Manifest.Artifacts))
+	incidentArtifacts := make(map[string]model.Artifact, len(incident.Manifest.Artifacts))
+	for _, artifact := range baseline.Manifest.Artifacts {
+		baselineArtifacts[artifact.Path] = artifact
+	}
+	for _, artifact := range incident.Manifest.Artifacts {
+		incidentArtifacts[artifact.Path] = artifact
+		baselineArtifact, exists := baselineArtifacts[artifact.Path]
+		if !exists {
+			result.AddedArtifacts = append(result.AddedArtifacts, artifact.Path)
+		} else if baselineArtifact.SHA256 != artifact.SHA256 {
+			result.ChangedArtifacts = append(result.ChangedArtifacts, model.ArtifactChange{
+				Path: artifact.Path, BaselineSHA256: baselineArtifact.SHA256, IncidentSHA256: artifact.SHA256,
+			})
+		}
+	}
+	for _, artifact := range baseline.Manifest.Artifacts {
+		if _, exists := incidentArtifacts[artifact.Path]; !exists {
+			result.RemovedArtifacts = append(result.RemovedArtifacts, artifact.Path)
+		}
+	}
 	baselineByKey := make(map[string]model.Finding)
 	incidentByKey := make(map[string]model.Finding)
 	for _, finding := range baseline.Findings {
@@ -30,6 +73,9 @@ func Workspaces(baseline, incident model.Workspace) model.Comparison {
 	}
 	sort.Slice(result.NewFindings, func(i, j int) bool { return result.NewFindings[i].ID < result.NewFindings[j].ID })
 	sort.Slice(result.ResolvedFindings, func(i, j int) bool { return result.ResolvedFindings[i].ID < result.ResolvedFindings[j].ID })
+	sort.Strings(result.AddedArtifacts)
+	sort.Strings(result.RemovedArtifacts)
+	sort.Slice(result.ChangedArtifacts, func(i, j int) bool { return result.ChangedArtifacts[i].Path < result.ChangedArtifacts[j].Path })
 	sort.Strings(result.UnchangedRules)
 	result.UnchangedRules = unique(result.UnchangedRules)
 	return result

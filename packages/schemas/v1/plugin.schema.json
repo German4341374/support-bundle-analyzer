@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://support-bundle-analyzer.dev/schemas/v1/plugin.schema.json",
+  "title": "Analyzer plugin",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "version", "protocolVersion", "executable", "supportedArtifactTypes", "capabilities", "timeout", "maintainer"],
+  "properties": {
+    "name": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "version": { "type": "string" },
+    "protocolVersion": { "const": "1" },
+    "executable": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "supportedArtifactTypes": { "type": "array", "items": { "type": "string" } },
+    "capabilities": { "type": "array", "items": { "type": "string" } },
+    "timeout": { "type": "integer", "minimum": 1, "maximum": 3600 },
+    "maintainer": { "type": "string", "minLength": 1 }
+  }
+}
+

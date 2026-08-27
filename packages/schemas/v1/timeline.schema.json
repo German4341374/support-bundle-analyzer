@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://support-bundle-analyzer.dev/schemas/v1/timeline.schema.json",
+  "title": "Timeline event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["timestamp", "source", "component", "severity", "category", "message", "artifact", "evidence"],
+  "properties": {
+    "timestamp": { "type": "string", "format": "date-time" },
+    "source": { "type": "string" },
+    "component": { "type": "string" },
+    "severity": { "enum": ["debug", "info", "warning", "error", "critical"] },
+    "category": { "type": "string" },
+    "message": { "type": "string" },
+    "artifact": { "type": "string" },
+    "correlationId": { "type": "string" },
+    "evidence": { "type": "object" }
+  }
+}
+

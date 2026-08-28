@@ -5,7 +5,9 @@
 .vscode/
 .DS_Store
 Thumbs.db
-/bin/
+bin/
+!analyzers/php-web-diagnostics-analyzer/bin/
+!analyzers/php-web-diagnostics-analyzer/bin/analyzer.php
 dist/
 coverage/
 node_modules/

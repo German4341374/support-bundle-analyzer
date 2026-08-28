@@ -3,40 +3,64 @@ updates:
   - package-ecosystem: gomod
     directory: /
     schedule: {interval: weekly}
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 2
+    groups:
+      routine-updates:
+        update-types: [minor, patch]
     labels: [dependencies, go]
   - package-ecosystem: npm
     directory: /
     schedule: {interval: weekly}
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 2
+    groups:
+      routine-updates:
+        update-types: [minor, patch]
     labels: [dependencies, typescript]
   - package-ecosystem: pip
     directory: /analyzers/log-intelligence-python
     schedule: {interval: weekly}
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 2
+    groups:
+      routine-updates:
+        update-types: [minor, patch]
     labels: [dependencies, python]
   - package-ecosystem: nuget
     directory: /analyzers/windows-diagnostics-analyzer
     schedule: {interval: weekly}
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 2
+    groups:
+      routine-updates:
+        update-types: [minor, patch]
     labels: [dependencies, dotnet]
   - package-ecosystem: maven
     directory: /analyzers/jvm-diagnostics-analyzer
     schedule: {interval: weekly}
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 2
+    groups:
+      routine-updates:
+        update-types: [minor, patch]
     labels: [dependencies, java]
   - package-ecosystem: composer
     directory: /analyzers/php-web-diagnostics-analyzer
     schedule: {interval: weekly}
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 2
+    groups:
+      routine-updates:
+        update-types: [minor, patch]
     labels: [dependencies, php]
   - package-ecosystem: docker
     directory: /
     schedule: {interval: weekly}
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 2
+    groups:
+      routine-updates:
+        update-types: [minor, patch]
     labels: [dependencies, docker]
   - package-ecosystem: github-actions
     directory: /
     schedule: {interval: weekly}
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 2
+    groups:
+      routine-updates:
+        update-types: [minor, patch]
     labels: [dependencies, ci]

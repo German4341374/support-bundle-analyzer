@@ -5,7 +5,7 @@
 .vscode/
 .DS_Store
 Thumbs.db
-bin/
+/bin/
 dist/
 coverage/
 node_modules/

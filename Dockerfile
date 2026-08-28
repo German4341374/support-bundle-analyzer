@@ -8,7 +8,7 @@ COPY apps/static-report-viewer apps/static-report-viewer
 COPY internal internal
 RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/support-bundle-analyzer ./apps/cli
 
-FROM node:24.14.1-alpine3.23 AS node-build
+FROM node:26.7.0-alpine3.23 AS node-build
 WORKDIR /src
 COPY package.json package-lock.json ./
 COPY apps/api/package.json apps/api/package.json
@@ -16,7 +16,7 @@ RUN npm ci --ignore-scripts
 COPY apps/api apps/api
 RUN npm run build && npm prune --omit=dev --ignore-scripts
 
-FROM node:24.14.1-alpine3.23 AS runtime
+FROM node:26.7.0-alpine3.23 AS runtime
 ENV NODE_ENV=production \
     SBA_HOST=0.0.0.0 \
     SBA_PORT=8080 \

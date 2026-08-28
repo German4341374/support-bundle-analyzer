@@ -24,7 +24,10 @@ ENV NODE_ENV=production \
     SBA_CORE_BINARY=/usr/local/bin/support-bundle-analyzer \
     SBA_INPUT_ROOT=/input \
     SBA_WORKSPACE_ROOT=/data/workspaces
-RUN addgroup -S -g 10001 analyzer && adduser -S -D -H -u 10001 -G analyzer analyzer \
+RUN apk upgrade --no-cache \
+    && rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack /opt/yarn-v1.22.22 \
+    && rm -f /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack /usr/local/bin/yarn /usr/local/bin/yarnpkg \
+    && addgroup -S -g 10001 analyzer && adduser -S -D -H -u 10001 -G analyzer analyzer \
     && mkdir -p /app /data/workspaces /input \
     && chown -R analyzer:analyzer /app /data /input
 WORKDIR /app

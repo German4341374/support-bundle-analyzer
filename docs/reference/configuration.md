@@ -12,6 +12,8 @@ CLI flags override environment variables, which override file configuration, whi
 | `SBA_WORKSPACE_ROOT` | `.sba/workspaces` | API-managed analysis workspaces |
 | `SBA_CORE_BINARY` | `support-bundle-analyzer` | Trusted Go binary path |
 | `SBA_ANALYSIS_TIMEOUT_SECONDS` | `900` | Hard process deadline, from 1 to 86400 seconds |
+| `SBA_RATE_LIMIT_MAX` | `120` | Maximum requests per client IP per minute |
+| `SBA_EXPENSIVE_RATE_LIMIT_MAX` | `10` | Maximum analysis, redaction, or comparison requests per client IP per minute; cannot exceed the general limit |
 | `LOG_LEVEL` | `info` | structured API log level |
 
 Do not put access tokens or database passwords in version control. Use `.env.example` only as a list of required names.

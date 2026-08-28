@@ -27,4 +27,22 @@ describe("configuration", () => {
       "SBA_ANALYSIS_TIMEOUT_SECONDS",
     );
   });
+
+  it("validates general and expensive-operation rate limits", () => {
+    expect(() => loadConfig({ SBA_RATE_LIMIT_MAX: "0" })).toThrow(
+      "SBA_RATE_LIMIT_MAX",
+    );
+    expect(() =>
+      loadConfig({
+        SBA_RATE_LIMIT_MAX: "5",
+        SBA_EXPENSIVE_RATE_LIMIT_MAX: "6",
+      }),
+    ).toThrow("SBA_EXPENSIVE_RATE_LIMIT_MAX");
+    expect(
+      loadConfig({
+        SBA_RATE_LIMIT_MAX: "20",
+        SBA_EXPENSIVE_RATE_LIMIT_MAX: "4",
+      }),
+    ).toMatchObject({ rateLimitMax: 20, expensiveRateLimitMax: 4 });
+  });
 });

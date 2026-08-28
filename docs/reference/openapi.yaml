@@ -42,6 +42,7 @@ paths:
       responses:
         "202": {description: Analysis queued}
         "400": {$ref: "#/components/responses/Error"}
+        "429": {$ref: "#/components/responses/Error"}
   /api/v1/analyses/{id}:
     parameters:
       - {$ref: "#/components/parameters/AnalysisId"}
@@ -120,11 +121,13 @@ paths:
                 profile: {enum: [standard, strict]}
       responses:
         "201": {description: Sanitized export created}
+        "429": {$ref: "#/components/responses/Error"}
   /api/v1/comparisons:
     post:
       operationId: compareAnalyses
       responses:
         "201": {description: Comparison created}
+        "429": {$ref: "#/components/responses/Error"}
   /api/v1/plugins:
     get:
       operationId: listPlugins

@@ -14,6 +14,10 @@ auth:
 
 analysisTimeoutSeconds: 900
 
+rateLimit:
+  max: 120
+  expensiveMax: 10
+
 persistence:
   enabled: true
   size: 2Gi

@@ -1,6 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { mkdir, readFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
+import rateLimit from "@fastify/rate-limit";
 import Fastify, { type FastifyError, type FastifyInstance } from "fastify";
 import type { Config } from "./config.js";
 import { execute, runAnalysis } from "./runner.js";
@@ -29,10 +30,10 @@ interface ComparisonBody {
   incidentAnalysisId: string;
 }
 
-export function buildApp(
+export async function buildApp(
   config: Config,
   store = new SessionStore(),
-): FastifyInstance {
+): Promise<FastifyInstance> {
   const app = Fastify({
     logger: {
       level: process.env.LOG_LEVEL ?? "info",
@@ -40,6 +41,12 @@ export function buildApp(
     },
     bodyLimit: 64 * 1024,
     requestIdHeader: "x-request-id",
+  });
+
+  await app.register(rateLimit, {
+    global: true,
+    max: config.rateLimitMax,
+    timeWindow: 60_000,
   });
 
   app.addHook("onRequest", async (request, reply) => {
@@ -69,11 +76,13 @@ export function buildApp(
         );
   });
 
-  app.get("/health", () => ({
+  app.get("/health", { config: { rateLimit: false } }, () => ({
     status: "ok",
     service: "support-bundle-analyzer-api",
   }));
-  app.get("/ready", () => ({ status: "ready" }));
+  app.get("/ready", { config: { rateLimit: false } }, () => ({
+    status: "ready",
+  }));
   app.get("/metrics", async (_request, reply) => {
     const sessions = store.list();
     const lines = [
@@ -92,6 +101,9 @@ export function buildApp(
   app.post<{ Body: CreateAnalysisBody }>(
     "/api/v1/analyses",
     {
+      config: {
+        rateLimit: { max: config.expensiveRateLimitMax, timeWindow: 60_000 },
+      },
       schema: {
         body: {
           type: "object",
@@ -268,6 +280,9 @@ export function buildApp(
   app.post<{ Params: AnalysisParams; Body: RedactBody }>(
     "/api/v1/analyses/:id/redact",
     {
+      config: {
+        rateLimit: { max: config.expensiveRateLimitMax, timeWindow: 60_000 },
+      },
       schema: {
         body: {
           type: "object",
@@ -322,6 +337,9 @@ export function buildApp(
   app.post<{ Body: ComparisonBody }>(
     "/api/v1/comparisons",
     {
+      config: {
+        rateLimit: { max: config.expensiveRateLimitMax, timeWindow: 60_000 },
+      },
       schema: {
         body: {
           type: "object",
@@ -389,19 +407,25 @@ export function buildApp(
     ],
   }));
 
-  app.setErrorHandler((error: FastifyError, _request, reply) => {
+  app.setErrorHandler((error: FastifyError, request, reply) => {
     const status =
       "statusCode" in error && typeof error.statusCode === "number"
         ? error.statusCode
         : 500;
-    void reply
-      .code(status)
-      .send(
-        errorBody(
-          status >= 500 ? "INTERNAL_ERROR" : "INVALID_REQUEST",
-          status >= 500 ? "The request could not be completed" : error.message,
-        ),
-      );
+    if (status >= 500) request.log.error({ err: error }, "request failed");
+    const code =
+      status === 429
+        ? "RATE_LIMIT_EXCEEDED"
+        : status >= 500
+          ? "INTERNAL_ERROR"
+          : "INVALID_REQUEST";
+    const message =
+      status === 429
+        ? "Too many requests"
+        : status >= 500
+          ? "The request could not be completed"
+          : error.message;
+    void reply.code(status).send(errorBody(code, message));
   });
   return app;
 }

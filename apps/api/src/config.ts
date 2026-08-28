@@ -10,6 +10,8 @@ export interface Config {
   inputRoot: string;
   coreBinary: string;
   analysisTimeoutMs: number;
+  rateLimitMax: number;
+  expensiveRateLimitMax: number;
 }
 
 const loopbackHosts = new Set(["127.0.0.1", "::1", "localhost"]);
@@ -21,6 +23,11 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const accessToken = env.SBA_ACCESS_TOKEN;
   const analysisTimeoutSeconds = Number.parseInt(
     env.SBA_ANALYSIS_TIMEOUT_SECONDS ?? "900",
+    10,
+  );
+  const rateLimitMax = Number.parseInt(env.SBA_RATE_LIMIT_MAX ?? "120", 10);
+  const expensiveRateLimitMax = Number.parseInt(
+    env.SBA_EXPENSIVE_RATE_LIMIT_MAX ?? "10",
     10,
   );
   if (!Number.isInteger(port) || port < 1 || port > 65535) {
@@ -46,6 +53,24 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
       "SBA_ANALYSIS_TIMEOUT_SECONDS must be an integer between 1 and 86400",
     );
   }
+  if (
+    !Number.isInteger(rateLimitMax) ||
+    rateLimitMax < 1 ||
+    rateLimitMax > 10_000
+  ) {
+    throw new Error(
+      "SBA_RATE_LIMIT_MAX must be an integer between 1 and 10000",
+    );
+  }
+  if (
+    !Number.isInteger(expensiveRateLimitMax) ||
+    expensiveRateLimitMax < 1 ||
+    expensiveRateLimitMax > rateLimitMax
+  ) {
+    throw new Error(
+      "SBA_EXPENSIVE_RATE_LIMIT_MAX must be an integer between 1 and SBA_RATE_LIMIT_MAX",
+    );
+  }
   return {
     host,
     port,
@@ -55,5 +80,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     inputRoot: resolve(env.SBA_INPUT_ROOT ?? "."),
     coreBinary: resolve(env.SBA_CORE_BINARY ?? "support-bundle-analyzer"),
     analysisTimeoutMs: analysisTimeoutSeconds * 1000,
+    rateLimitMax,
+    expensiveRateLimitMax,
   };
 }

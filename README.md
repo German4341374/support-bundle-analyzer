@@ -128,7 +128,7 @@ curl -X POST http://127.0.0.1:8080/api/v1/analyses \
   -d '{"inputPath":"./database-outage.zip"}'
 ```
 
-The API accepts local paths only under `SBA_INPUT_ROOT`; it is not an unauthenticated upload service. Findings, timeline, and artifacts are cursor-paginated with a maximum page size of 200. Progress is streamed from `/api/v1/analyses/:id/events` as Server-Sent Events. `/health` and the minimal `/ready` endpoint remain public for container and Kubernetes probes; all analysis routes require the remote-mode bearer token.
+The API accepts local paths only under `SBA_INPUT_ROOT`; it is not an unauthenticated upload service. Findings, timeline, and artifacts are cursor-paginated with a maximum page size of 200. Progress is streamed from `/api/v1/analyses/:id/events` as Server-Sent Events. `/health` and the minimal `/ready` endpoint remain public for container and Kubernetes probes; all analysis routes require the remote-mode bearer token. Per-IP rate limits protect the API, with a stricter configurable budget for analysis, redaction, and comparison operations.
 
 ## Docker Compose
 

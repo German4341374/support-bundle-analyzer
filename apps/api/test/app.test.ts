@@ -11,11 +11,13 @@ const config: Config = {
   inputRoot: resolve("."),
   coreBinary: resolve(".tmp/missing-binary"),
   analysisTimeoutMs: 5_000,
+  rateLimitMax: 100,
+  expensiveRateLimitMax: 10,
 };
 
 describe("API", () => {
   it("reports health", async () => {
-    const app = buildApp(config);
+    const app = await buildApp(config);
     const response = await app.inject({ method: "GET", url: "/health" });
     expect(response.statusCode).toBe(200);
     expect(response.json()).toMatchObject({ status: "ok" });
@@ -23,7 +25,7 @@ describe("API", () => {
   });
 
   it("returns normalized not-found errors", async () => {
-    const app = buildApp(config);
+    const app = await buildApp(config);
     const response = await app.inject({
       method: "GET",
       url: "/api/v1/analyses/missing",
@@ -39,7 +41,7 @@ describe("API", () => {
   });
 
   it("validates analysis bodies", async () => {
-    const app = buildApp(config);
+    const app = await buildApp(config);
     const response = await app.inject({
       method: "POST",
       url: "/api/v1/analyses",
@@ -51,7 +53,7 @@ describe("API", () => {
   });
 
   it("protects remote mode with constant-time bearer comparison", async () => {
-    const remote = buildApp({
+    const remote = await buildApp({
       ...config,
       allowRemote: true,
       accessToken: "012345678901234567890123",
@@ -77,5 +79,26 @@ describe("API", () => {
       ).statusCode,
     ).toBe(200);
     await remote.close();
+  });
+
+  it("rate limits resource-intensive routes", async () => {
+    const app = await buildApp({
+      ...config,
+      expensiveRateLimitMax: 2,
+    });
+    const request = {
+      method: "POST" as const,
+      url: "/api/v1/comparisons",
+      payload: {
+        baselineAnalysisId: "missing-baseline",
+        incidentAnalysisId: "missing-incident",
+      },
+    };
+    expect((await app.inject(request)).statusCode).toBe(404);
+    expect((await app.inject(request)).statusCode).toBe(404);
+    const limited = await app.inject(request);
+    expect(limited.statusCode).toBe(429);
+    expect(limited.json()).toHaveProperty("error.code", "RATE_LIMIT_EXCEEDED");
+    await app.close();
   });
 });

@@ -35,6 +35,10 @@ spec:
               value: "true"
             - name: SBA_ANALYSIS_TIMEOUT_SECONDS
               value: {{ .Values.analysisTimeoutSeconds | quote }}
+            - name: SBA_RATE_LIMIT_MAX
+              value: {{ .Values.rateLimit.max | quote }}
+            - name: SBA_EXPENSIVE_RATE_LIMIT_MAX
+              value: {{ .Values.rateLimit.expensiveMax | quote }}
             - name: SBA_ACCESS_TOKEN
               valueFrom:
                 secretKeyRef:

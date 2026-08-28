@@ -41,7 +41,7 @@ terraform -chdir=deploy/terraform init -backend=false -input=false
 terraform -chdir=deploy/terraform validate
 ```
 
-Test results: 21 Go tests passed and one symlink test was skipped on Windows; 10 Vitest tests, 11 Pytest tests, 3 xUnit tests, 3 JUnit tests, and 3 PHPUnit tests passed. Node coverage was 42.03% statements, 48.99% branches, 37.5% functions, and 42.58% lines. Dependency audits reported no known npm or Composer advisories at the time of execution.
+Test results: 21 Go tests passed and one symlink test was skipped on Windows; 12 Vitest tests, 11 Pytest tests, 3 xUnit tests, 3 JUnit tests, and 3 PHPUnit tests passed. Node coverage was 45.99% statements, 55.62% branches, 39.58% functions, and 47.03% lines. Dependency audits reported no known npm or Composer advisories at the time of execution.
 
 The real CLI also generated both synthetic scenarios, analyzed both archives, produced four outage findings versus zero healthy findings, compared three changed artifacts, generated both offline reports, and created a strict sanitized export whose manifest recorded one bearer-token and one connection-string replacement. Browser verification rendered overview, findings, timeline, HAR inventory, privacy, and comparison views without console errors.
 

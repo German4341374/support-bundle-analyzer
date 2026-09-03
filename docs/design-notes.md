@@ -1,4 +1,4 @@
-# Interview questions and answers
+# Design notes
 
 1. **Why is Go the core runtime?** It provides a small deployable binary, strong streaming and concurrency primitives, and predictable resource control around untrusted archives.
 2. **Why use plugins?** Platform formats need different ecosystems. A JSONL boundary keeps the security-sensitive core independent and makes crashes containable.

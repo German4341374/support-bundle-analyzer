@@ -4,7 +4,12 @@
 [![Security](https://github.com/German4341374/support-bundle-analyzer/actions/workflows/security.yml/badge.svg)](https://github.com/German4341374/support-bundle-analyzer/actions/workflows/security.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
-Offline, privacy-first support bundle analyzer for logs, HAR files, Windows events, Kubernetes, Docker and application diagnostics. It safely extracts archives, inventories and hashes their contents, builds evidence-backed findings and a unified timeline, detects sensitive values, and produces a static report that works without a backend or network connection.
+When a support case comes with a pile of logs and diagnostic files, this tool puts them in
+one report. It reads archives, lines up events on a timeline, and flags possible problems
+with references to the files they came from.
+
+It handles logs, HAR files, Windows events, and Docker and Kubernetes diagnostics locally.
+The report opens without a backend. Findings are clues to investigate, not proof of a root cause.
 
 ![Synthetic database-outage investigation overview](docs/images/report-overview.png)
 
@@ -34,16 +39,16 @@ Open `investigation/report/index.html`. It loads local assets only. To prepare a
 
 ## What it analyzes
 
-| Area | Runtime | Current capability |
-|---|---|---|
-| Secure ingestion and orchestration | Go | ZIP, TAR, TAR.GZ, TAR.BZ2, TAR.XZ and GZIP; traversal/link/duplicate/bomb limits; SHA-256 inventory |
-| Logs and HAR | Go | error patterns, evidence grouping, HTTP failures, timings, timeline and secret/PII review |
-| Advanced log intelligence | Python | streaming JSON/generic/gzip logs, fingerprints, bursts, correlation IDs and privacy counts |
-| Windows diagnostics | .NET | safe Event XML parsing and evidence groups for operationally important event families |
-| JVM diagnostics | Java | thread states, deadlock indicators, GC pauses, OOM evidence and safe heap-dump recognition |
-| PHP/web diagnostics | PHP | fatal errors, resource limits, PHP-FPM pressure, upstream failures and repeated HTTP 5xx |
-| Local control plane | TypeScript | Fastify API, bounded cursor pages, SSE progress, token-protected remote mode and metrics |
-| Persistent server mode | PostgreSQL | versioned schema, constraints, full-text search and investigation-oriented indexes |
+| Area                               | Runtime    | Current capability                                                                                  |
+| ---------------------------------- | ---------- | --------------------------------------------------------------------------------------------------- |
+| Secure ingestion and orchestration | Go         | ZIP, TAR, TAR.GZ, TAR.BZ2, TAR.XZ and GZIP; traversal/link/duplicate/bomb limits; SHA-256 inventory |
+| Logs and HAR                       | Go         | error patterns, evidence grouping, HTTP failures, timings, timeline and secret/PII review           |
+| Advanced log intelligence          | Python     | streaming JSON/generic/gzip logs, fingerprints, bursts, correlation IDs and privacy counts          |
+| Windows diagnostics                | .NET       | safe Event XML parsing and evidence groups for operationally important event families               |
+| JVM diagnostics                    | Java       | thread states, deadlock indicators, GC pauses, OOM evidence and safe heap-dump recognition          |
+| PHP/web diagnostics                | PHP        | fatal errors, resource limits, PHP-FPM pressure, upstream failures and repeated HTTP 5xx            |
+| Local control plane                | TypeScript | Fastify API, bounded cursor pages, SSE progress, token-protected remote mode and metrics            |
+| Persistent server mode             | PostgreSQL | versioned schema, constraints, full-text search and investigation-oriented indexes                  |
 
 The built-in Go log and HAR analyzers are wired into the default pipeline. External language plugins implement protocol version 1 and can be run independently; automatic discovery/orchestration for every bundled plugin is tracked as post-0.1 work. See [project status](docs/project-status.md).
 
@@ -51,11 +56,11 @@ The built-in Go log and HAR analyzers are wired into the default pipeline. Exter
 
 These screenshots were captured from the working report with the repository's synthetic database-outage fixture. The report has no external fonts, scripts, analytics, or network requests.
 
-| Findings | Timeline |
-|---|---|
+| Findings                                                     | Timeline                                                           |
+| ------------------------------------------------------------ | ------------------------------------------------------------------ |
 | ![Evidence-backed findings](docs/images/report-findings.png) | ![Normalized diagnostic timeline](docs/images/report-timeline.png) |
-| HAR artifact | Privacy review |
-| ![HAR artifact inventory](docs/images/report-har.png) | ![Sensitive-data review](docs/images/report-privacy.png) |
+| HAR artifact                                                 | Privacy review                                                     |
+| ![HAR artifact inventory](docs/images/report-har.png)        | ![Sensitive-data review](docs/images/report-privacy.png)           |
 
 Try the live synthetic demo: [database-outage report](https://german4341374.github.io/support-bundle-analyzer/demo-report/) and [healthy-vs-outage comparison](https://german4341374.github.io/support-bundle-analyzer/comparison.html).
 
